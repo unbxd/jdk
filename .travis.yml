@@ -1,4 +1,15 @@
-: true
+# Language doesn't matter
+# Adding here to avoid linting errors
+language: ruby
+
+# We don't want to pull submodule at the 
+# beginning of the build, we will do that once we have
+# added the key
+git:
+  submodules: false
+
+
+sudo: true
 
 env:
     global:
@@ -13,16 +24,17 @@ services:
     - docker
 
 before_install:
+
       # Set up Docker Compose For Future
       # ---------------------------------------------------------------
-    - rm /usr/local/bin/docker-compose
+    - sudo rm -f /usr/local/bin/docker-compose
     - curl -L https://github.com/docker/compose/releases/download/${DC_VER}/docker-compose-`uname -s`-`uname -m` > docker-compose
     - chmod +x docker-compose
-    - mv docker-compose /usr/local/bin
+    - sudo mv docker-compose /usr/local/bin
 
       # Install Utils
       # ---------------------------------------------------------------
-    - apt-get install tree
+    - sudo apt-get install tree curl
 
       # Add Dependencies using git-submodule
       # ---------------------------------------------------------------
@@ -34,13 +46,13 @@ before_install:
       # key has been encoded using travis's file encryption 
       # (ref: https://docs.travis-ci.com/user/encrypting-files)
       # ---------------------------------------------------------------
-    - openssl aes-256-cbc -K $encrypted_0a6446eb3ae3_key -iv $encrypted_0a6446eb3ae3_iv -in asterix_deploy_key.enc -out asterix_key -d
+    - openssl aes-256-cbc -K $encrypted_64a38e80606c_key -iv $encrypted_64a38e80606c_iv -in asterix_deploy_key.enc -out asterix_deploy_key -d
 
       # ---------------------------------------------------------------
       # Decoding file gives us a private key, which can be added to ssh agent.
       # This is necessary for Git to fetch the submodule
       # ---------------------------------------------------------------
-    - ssh-agent sh -c "ssh-add -D; ssh-add asterix_key"
+    - ssh-agent sh -c "ssh-add -D; ssh-add asterix_deploy_key"
 
       # Fetch the latest tag of each submodule
       # ---------------------------------------------------------------
@@ -53,7 +65,7 @@ before_install:
 
       # Download Oracle - tar from the URL
       # ---------------------------------------------------------------
-    - wget -o ./base/oracle-jdk.tar.gz --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u151-b12/e758a0de34e24606bca991d704f6dcbf/jdk-8u151-linux-x64.tar.gz
+    - curl -v -j -k -L -H "Cookie:oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.tar.gz > ./base/oracle-jdk.tar.gz
 
       # Debugging 
       # ---------------------------------------------------------------
