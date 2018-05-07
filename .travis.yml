@@ -1,0 +1,36 @@
+: true
+
+env:
+    global:
+          # ECR URL
+        - ECR_US_EAST_1_URL="012629307706.dkr.ecr.us-east-1.amazonaws.com"
+          # Tag Name
+        - LATEST="latest"
+          # Docker Compose Version
+        - DC_VER=1.21.0
+
+services:
+    - docker
+
+before_install:
+      # Set up Docker Compose For Future
+    - rm /usr/local/bin/docker-compose
+    - curl -L https://github.com/docker/compose/releases/download/${DC_VER}/docker-compose-`uname -s`-`uname -m` > docker-compose
+    - chmod +x docker-compose
+    - mv docker-compose /usr/local/bin
+
+      # Install Utils
+    - apt-get install tree
+
+      # Add Dependencies using git-submodule
+    - openssl aes-256-cbc -K $encrypted_0a6446eb3ae3_key -iv $encrypted_0a6446eb3ae3_iv -in asterix_deploy_key.enc -out asterix_key -d
+    - ssh-agent sh -c "ssh-add -D; ssh-add asterix_key"
+    - git submodule update --remote
+
+      # Download Oracle - tar from the URL
+    - wget -o ./base/oracle-jdk.tar.gz --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u151-b12/e758a0de34e24606bca991d704f6dcbf/jdk-8u151-linux-x64.tar.gz
+    - tree . 
+
+install:
+    - cd ./base && docker build -t oracle-java8-base:latest .
+    - cd ../maven && docker build -t oracle-java8-mvn:latest .
