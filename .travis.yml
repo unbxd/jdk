@@ -14,22 +14,51 @@ services:
 
 before_install:
       # Set up Docker Compose For Future
+      # ---------------------------------------------------------------
     - rm /usr/local/bin/docker-compose
     - curl -L https://github.com/docker/compose/releases/download/${DC_VER}/docker-compose-`uname -s`-`uname -m` > docker-compose
     - chmod +x docker-compose
     - mv docker-compose /usr/local/bin
 
       # Install Utils
+      # ---------------------------------------------------------------
     - apt-get install tree
 
       # Add Dependencies using git-submodule
+      # ---------------------------------------------------------------
+      # The dependencies are being fetched using Deploy Keys.
+      #
+      # Refer: https://docs.travis-ci.com/user/private-dependencies/#Deploy-Key
+      #
+      # Key pair has been added as part of Asterix Repository, and the private
+      # key has been encoded using travis's file encryption 
+      # (ref: https://docs.travis-ci.com/user/encrypting-files)
+      # ---------------------------------------------------------------
     - openssl aes-256-cbc -K $encrypted_0a6446eb3ae3_key -iv $encrypted_0a6446eb3ae3_iv -in asterix_deploy_key.enc -out asterix_key -d
+
+      # ---------------------------------------------------------------
+      # Decoding file gives us a private key, which can be added to ssh agent.
+      # This is necessary for Git to fetch the submodule
+      # ---------------------------------------------------------------
     - ssh-agent sh -c "ssh-add -D; ssh-add asterix_key"
-    - git submodule update --remote
+
+      # Fetch the latest tag of each submodule
+      # ---------------------------------------------------------------
+    - git submodule foreach 'git fetch origin; git checkout $(git describe --tags `git rev-list --tags --max-count=1`);'
+
+      # Print the commit SHA for debugging
+      # ---------------------------------------------------------------
+    - cd projects/asterix && git --no-pager log --pretty=format:"%h %s" 
+    - cd ../..
 
       # Download Oracle - tar from the URL
+      # ---------------------------------------------------------------
     - wget -o ./base/oracle-jdk.tar.gz --no-check-certificate -c --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u151-b12/e758a0de34e24606bca991d704f6dcbf/jdk-8u151-linux-x64.tar.gz
+
+      # Debugging 
+      # ---------------------------------------------------------------
     - tree . 
+
 
 install:
     - cd ./base && docker build -t oracle-java8-base:latest .
