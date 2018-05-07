@@ -60,7 +60,7 @@ before_install:
       # This is necessary for Git to clone and fetch repository
       # ---------------------------------------------------------------
     - ssh-agent bash -c "ssh-add asterix_deploy_key; git clone -v git@github.com:unbxd/asterix.git /tmp/asterix"
-    - tree /tmp/asterix && cd tmp/asterix
+    - ls /tmp/asterix && cd /tmp/asterix
     - git fetch --tags && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && git checkout $latestTag
 
       # Print the commit SHA for debugging
