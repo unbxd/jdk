@@ -1,0 +1,3 @@
+[submodule "projects/asterix"]
+	path = projects/asterix
+	url = git@github.com:unbxd/asterix.git
