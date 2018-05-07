@@ -46,7 +46,8 @@ before_install:
       # key has been encoded using travis's file encryption 
       # (ref: https://docs.travis-ci.com/user/encrypting-files)
       # ---------------------------------------------------------------
-    - openssl aes-256-cbc -K $encrypted_64a38e80606c_key -iv $encrypted_64a38e80606c_iv -in asterix_deploy_key.enc -out asterix_deploy_key -d
+    - openssl aes-256-cbc -K $encrypted_ef9749577393_key -iv $encrypted_ef9749577393_iv -in asterix_deploy_key.enc -out asterix_deploy_key -d
+
 
       # ---------------------------------------------------------------
       # Decoding file gives us a private key, which can be added to ssh agent.
