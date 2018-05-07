@@ -2,6 +2,13 @@
 # Adding here to avoid linting errors
 language: ruby
 
+# We don't want to pull submodule at the 
+# beginning of the build, we will do that once we have
+# added the key
+git:
+  submodules: false
+
+
 sudo: true
 
 env:
