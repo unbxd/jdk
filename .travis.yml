@@ -59,7 +59,7 @@ before_install:
       # Decoding file gives us a private key, which can be added to ssh agent.
       # This is necessary for Git to clone and fetch repository
       # ---------------------------------------------------------------
-    - ssh-agent bash -c "ssh-add asterix_deploy_key; git clone git@github.com:unbxd/asterix.git projects/asterix && cd projects/asterix && git fetch --tags && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && git checkout $latestTag"
+    - ssh-agent bash -c "ssh-add asterix_deploy_key; git clone git@github.com:unbxd/asterix.git /tmp/asterix && /cd tmp/asterix && git fetch --tags && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && git checkout $latestTag"
 
       # Print the commit SHA for debugging
       # ---------------------------------------------------------------
