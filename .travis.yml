@@ -35,7 +35,7 @@ before_install:
       # Install Utils
       # ---------------------------------------------------------------
     - sudo apt-get install tree curl
-
+      #
       # Add Dependencies using git-submodule
       # ---------------------------------------------------------------
       # The dependencies are being fetched using Deploy Keys.
@@ -45,20 +45,21 @@ before_install:
       # Key pair has been added as part of Asterix Repository, and the private
       # key has been encoded using travis's file encryption 
       # (ref: https://docs.travis-ci.com/user/encrypting-files)
+      #
+      #
       # ---------------------------------------------------------------
+      # ASTERIX
+      # ---------------------------------------------------------------
+      #
+      # Decode Encrypted Key 
     - openssl aes-256-cbc -K $encrypted_ef9749577393_key -iv $encrypted_ef9749577393_iv -in asterix_deploy_key.enc -out asterix_deploy_key -d
 
     - chmod 700 asterix_deploy_key
       # ---------------------------------------------------------------
       # Decoding file gives us a private key, which can be added to ssh agent.
-      # This is necessary for Git to fetch the submodule
+      # This is necessary for Git to clone and fetch repository
       # ---------------------------------------------------------------
-    - ssh-agent sh -c "ssh-add -D; ssh-add asterix_deploy_key"
-
-      # Fetch the latest tags of projects
-      # ---------------------------------------------------------------
-    - git clone git@github.com:unbxd/asterix.git projects/asterix && cd projects/asterix
-    - git fetch --tags && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && git checkout $latestTag
+    - ssh-agent bash -c "ssh-add asterix_deploy_key; git clone git@github.com:unbxd/asterix.git projects/asterix && cd projects/asterix && git fetch --tags && latestTag=$(git describe --tags `git rev-list --tags --max-count=1`) && git checkout $latestTag"
 
       # Print the commit SHA for debugging
       # ---------------------------------------------------------------
