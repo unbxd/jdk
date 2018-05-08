@@ -39,7 +39,7 @@ before_install:
     - git clone git@github.com:unbxd/solr-plugin.git maven/projects/solr-plugin
 
       # Download Dependencies from S3
-    - aws s3 cp s3://unbxd-build-artifacts/solr/solr-plugins/solr-plugin-0.2.3.jar maven/asterix/solr-plugin-latest.jar
+    - aws s3 cp s3://unbxd-build-artifacts/solr/solr-plugins/solr-plugin-0.2.3.jar maven/projects/asterix/solr-plugin-latest.jar
     
 install:
     - cd ./base && docker build -t oracle-jdk8-base:latest .
