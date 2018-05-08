@@ -9,6 +9,7 @@ RUN mvn dependency:go-offline
 # Asterix Project
 #--------------------------------------------------
 ADD projects/asterix/pom.xml /mvn/asterix/pom.xml
+ADD projects/asterix/solr-plugin-latest.jar /mvn/asterix/solr-plugin-latest.jar
 WORKDIR /mvn/asterix
 RUN mvn install:install-file -DgroupId=com.unbxd -DartifactId=solr-plugin -Dversion=0.2.2 -Dpackaging=jar \
         -Dfile=solr-plugin-latest.jar
