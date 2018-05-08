@@ -1,4 +1,4 @@
-FROM oracle-java8-base:latest
+FROM oracle-jdk8-base:latest
 
 WORKDIR /mvn
 
