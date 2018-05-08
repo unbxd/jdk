@@ -1,7 +1,4 @@
-# Language doesn't matter
-# Adding here to avoid linting errors
-language: ruby
-
+language: generic
 sudo: true
 
 env:
