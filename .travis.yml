@@ -2,76 +2,32 @@
 # Adding here to avoid linting errors
 language: ruby
 
-# We don't want to pull submodule at the 
-# beginning of the build, we will do that once we have
-# added the key
-git:
-  submodules: false
-
-
 sudo: true
 
 env:
     global:
           # ECR URL
         - ECR_US_EAST_1_URL="012629307706.dkr.ecr.us-east-1.amazonaws.com"
+
           # Tag Name
         - LATEST="latest"
-          # Docker Compose Version
-        - DC_VER=1.21.0
+
+        - PROJECT_DIR="/projects"
+
+        - ASTERIX_DIR="${PROJECT_DIR}/asterix"
 
 services:
     - docker
 
 before_install:
 
-      # Set up Docker Compose For Future
-      # ---------------------------------------------------------------
-    - sudo rm -f /usr/local/bin/docker-compose
-    - curl -L https://github.com/docker/compose/releases/download/${DC_VER}/docker-compose-`uname -s`-`uname -m` > docker-compose
-    - chmod +x docker-compose
-    - sudo mv docker-compose /usr/local/bin
-
       # Install Utils
       # ---------------------------------------------------------------
     - sudo apt-get install tree curl
-
-      # Add Dependencies using git-submodule
-      # ---------------------------------------------------------------
-      # The dependencies are being fetched using Deploy Keys.
-      #
-      # Refer: https://docs.travis-ci.com/user/private-dependencies/#Deploy-Key
-      #
-      # Key pair has been added as part of Asterix Repository, and the private
-      # key has been encoded using travis's file encryption 
-      # (ref: https://docs.travis-ci.com/user/encrypting-files)
-      # ---------------------------------------------------------------
-    - openssl aes-256-cbc -K $encrypted_64a38e80606c_key -iv $encrypted_64a38e80606c_iv -in asterix_deploy_key.enc -out asterix_deploy_key -d
-
-      # ---------------------------------------------------------------
-      # Decoding file gives us a private key, which can be added to ssh agent.
-      # This is necessary for Git to fetch the submodule
-      # ---------------------------------------------------------------
-    - ssh-agent sh -c "ssh-add -D; ssh-add asterix_deploy_key"
-
-      # Fetch the latest tag of each submodule
-      # ---------------------------------------------------------------
-    - git submodule foreach 'git fetch origin; git checkout $(git describe --tags `git rev-list --tags --max-count=1`);'
-
-      # Print the commit SHA for debugging
-      # ---------------------------------------------------------------
-    - cd projects/asterix && git --no-pager log --pretty=format:"%h %s" 
-    - cd ../..
 
       # Download Oracle - tar from the URL
       # ---------------------------------------------------------------
     - curl -v -j -k -L -H "Cookie:oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.tar.gz > ./base/oracle-jdk.tar.gz
 
-      # Debugging 
-      # ---------------------------------------------------------------
-    - tree . 
-
-
 install:
     - cd ./base && docker build -t oracle-java8-base:latest .
-    - cd ../maven && docker build -t oracle-java8-mvn:latest .
