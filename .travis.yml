@@ -8,11 +8,6 @@ env:
 
           # Tag Name
         - LATEST="latest"
-
-        - PROJECT_DIR="/projects"
-
-        - ASTERIX_DIR="${PROJECT_DIR}/asterix"
-
 services:
     - docker
 
@@ -35,7 +30,7 @@ before_install:
       # ---------------------------------------------------------------
       # 
       # Clone Necessary Repository
-    - git clone git@github.com:unbxd/asterix.git projects/asterix
+    - git clone git@github.com:unbxd/asterix.git maven/projects/asterix
 
 install:
     - cd ./base && docker build -t oracle-jdk8-base:latest .
