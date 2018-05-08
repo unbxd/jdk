@@ -1,6 +1,6 @@
 FROM oracle-java8-base:latest
 
-WORKDIR /mvn/asterix
+WORKDIR /mvn
 
 ADD ./projects/asterix/pom.xml /mvn/asterix/pom.xml
 

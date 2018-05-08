@@ -17,6 +17,9 @@ services:
     - docker
 
 before_install:
+      # ---------------------------------------------------------------
+      # BASE IMAGE
+      # ---------------------------------------------------------------
 
       # Install Utils
       # ---------------------------------------------------------------
@@ -26,5 +29,14 @@ before_install:
       # ---------------------------------------------------------------
     - curl -v -j -k -L -H "Cookie:oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.tar.gz > ./base/oracle-jdk.tar.gz
 
+
+      # ---------------------------------------------------------------
+      # MAVEN IMAGE
+      # ---------------------------------------------------------------
+      # 
+      # Clone Necessary Repository
+    - git clone git@github.com:unbxd/asterix.git projects/asterix
+
 install:
-    - cd ./base && docker build -t oracle-java8-base:latest .
+    - cd ./base && docker build -t oracle-jdk8-base:latest .
+    - cd ../maven && docker build -t oracle-jdk8-with-mvn:latest .
