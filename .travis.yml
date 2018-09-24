@@ -45,7 +45,9 @@ before_install:
     
 install:
     - cd ./base && docker build -t oracle-jdk8-base:latest .
-    - cd ../maven && docker build -t oracle-jdk8-with-mvn:latest .
+      # - cd ../maven && docker build -t oracle-jdk8-with-mvn:latest .
+      # Remove maven-image build
+      # TODO: Fix this later.
 
 after_success:
     - eval $(aws ecr get-login --region us-east-1 --no-include-email)
@@ -53,8 +55,8 @@ after_success:
     - docker tag oracle-jdk8-base:latest $ECR_URL/oracle-jdk8-base:$LATEST_TAG
     - docker push $ECR_URL/oracle-jdk8-base:$LATEST_TAG
 
-    - docker tag oracle-jdk8-with-mvn:latest $ECR_URL/oracle-jdk8-with-mvn:$LATEST_TAG
-    - docker push $ECR_URL/oracle-jdk8-with-mvn:$LATEST_TAG
+      # - docker tag oracle-jdk8-with-mvn:latest $ECR_URL/oracle-jdk8-with-mvn:$LATEST_TAG
+      # - docker push $ECR_URL/oracle-jdk8-with-mvn:$LATEST_TAG
 
 notifications:
   slack: unbxd:60rvQrHi5prNg8dMCJBVAoZU
