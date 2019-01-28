@@ -1,6 +1,6 @@
 FROM debian:stretch
 
-ENV FN="jdk1.8.0_181"
+ENV FN="jdk1.8.0_201"
 
 ADD . /java
 ADD oracle-jdk.tar.gz "/usr/lib/jvm/"
