@@ -1,61 +1,79 @@
 language: generic
 sudo: true
-
 env:
     global:
-          # ECR URL
+        # --------------------------------------------------------------------------------------- #
+        #                       MODIFY FOR JRE VERSION UPGRADE                                    #
+        # --------------------------------------------------------------------------------------- #
+        #        
+        # JRE Variables used to form the download link
+        # Typically the URL looks like 
+        #
+        #       https://download.oracle.com/otn-pub/java/jdk/8u202-b08/1961070e4c9b4e26a04e7f5a083f551e/jre-8u202-linux-x64.tar.gz
+        #
+        # Download Version is denoted `8u202` 
+        # Download Version Suffix is `b08`
+        # Download Key is `1961070e4c9b4e26a04e7f5a083f551e`
+        - JRE_DOWNLOAD_VERSION="8u202"
+        - JRE_DOWNLOAD_VERSION_SUFFIX="b08"
+        - JRE_DOWNLOAD_KEY="1961070e4c9b4e26a04e7f5a083f551e"
+
+        # JRE Version
+        # This is available as part of the untar. Untaring the tar results in `jre1.8.0_202`. 
+        # Removing the prefix `jre` will give this version
+        - JRE_VERSION="1.8.0_202"
+
+        # --------------------------------------------------------------------------------------- #
+        #                       DO NOT MODIFY FURTHER FOR VERSION UPGRADE                         #
+        # --------------------------------------------------------------------------------------- #
+
+        # Curl header for download
+        - JRE_DOWNLOAD_HEADER="Cookie:oraclelicense=accept-securebackup-cookie"
+        # Name of JRE folder after it is extracted
+        - JRE_NAME="jre$JRE_VERSION"
+        # ECR Url
         - ECR_URL="012629307706.dkr.ecr.us-east-1.amazonaws.com"
-          # Tag Name
-        - LATEST_TAG="latest"
+        # Base Image Name
+        - BASE_IMAGE_NAME="oracle-jdk8-base"\
+        # Download URL 
+        - JRE_DOWNLOAD_URL="$JRE_DOWNLOAD_VERSION-$JRE_DOWNLOAD_VERSION_SUFFIX/$JRE_DOWNLOAD_KEY/jre-$JRE_DOWNLOAD_VERSION-linux-x64.tar.gz"
+
 services:
     - docker
 
 before_install:
-      # ---------------------------------------------------------------
-      # BASE IMAGE
-      # ---------------------------------------------------------------
+      # Print Env Variables
+    - printf "JRE_DOWNLOAD_VERSION [ $JRE_DOWNLOAD_VERSION ] \n" &&
+        printf "JRE_DOWNLOAD_VERSION_SUFFIX [ $JRE_DOWNLOAD_VERSION_SUFFIX ] \n" &&
+        printf "JRE_DOWNLOAD_KEY [ $JRE_DOWNLOAD_KEY ] \n" &&
+        printf "JRE_VERSION [ $JRE_VERSION ] \n" &&
+        printf "JRE_DOWNLOAD_HEADER [ $JRE_DOWNLOAD_HEADER ] \n" &&
+        printf "JRE_NAME [ $JRE_NAME ] \n" &&
+        printf "BASE_IMAGE_NAME [ $BASE_IMAGE_NAME ] \n" &&
+        printf "JRE_DOWNLOAD_URL [ $JRE_DOWNLOAD_URL ] \n"
 
-      # Install Utils
-      # ---------------------------------------------------------------
-    - sudo apt-get install  --no-install-recommends tree curl python
-    - sudo apt-get clean
-    - sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+      # Housekeeping
+    - sudo apt-get install  --no-install-recommends -y tree curl python &&
+        sudo apt-get clean &&
+        sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* &&
+        sudo pip install awscli
       
-      # AWS Cli
-    - sudo pip install awscli
-
       # Download Oracle - tar from the URL
-      # ---------------------------------------------------------------
-    - curl -v -j -k -L -H "Cookie:oraclelicense=accept-securebackup-cookie" https://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jdk-8u201-linux-x64.tar.gz > ./base/oracle-jdk.tar.gz
+    - curl -vjkL -H "$JRE_DOWNLOAD_HEADER" "https://download.oracle.com/otn-pub/java/jdk/$JRE_DOWNLOAD_URL" > ./java/jre.tar.gz 
+    - ls -ltrh ./java
 
 
-      # ---------------------------------------------------------------
-      # MAVEN IMAGE
-      # ---------------------------------------------------------------
-      # 
-      # Clone Necessary Repository
-    - git clone git@github.com:unbxd/asterix.git maven/projects/asterix
-    - git clone git@github.com:unbxd/solr-plugin.git maven/projects/solr-plugin
-
-      # Download Dependencies from S3
-      # - aws s3 cp s3://unbxd-build-artifacts/solr/solr-plugins/solr-plugin-0.2.3.jar maven/projects/asterix/solr-plugin-latest.jar
-      # Remove solr-plugin jar from maven base image.
-    
 install:
-    - cd ./base && docker build -t oracle-jdk8-base:latest .
-      # - cd ../maven && docker build -t oracle-jdk8-with-mvn:latest .
-      # Remove maven-image build
-      # TODO: Fix this later.
+    - cd ./java && docker build -t oracle-jdk8-base:latest --build-arg JRE_NAME .
 
 after_success:
-    - eval $(aws ecr get-login --region us-east-1 --no-include-email)
-
-    - docker tag oracle-jdk8-base:latest $ECR_URL/oracle-jdk8-base:$LATEST_TAG
-    - docker push $ECR_URL/oracle-jdk8-base:$LATEST_TAG
-
-      # - docker tag oracle-jdk8-with-mvn:latest $ECR_URL/oracle-jdk8-with-mvn:$LATEST_TAG
-      # - docker push $ECR_URL/oracle-jdk8-with-mvn:$LATEST_TAG
+    - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+        eval $(aws ecr get-login --region us-east-1 --no-include-email)
+        docker tag oracle-jdk8-base:latest $ECR_URL/oracle-jdk8-base:$LATEST_TAG
+        docker push $ECR_URL/oracle-jdk8-base:$LATEST_TAG
+        docker tag oracle-jdk8-base:latest $ECR_URL/oracle-jdk8-base:$JRE_VERSION
+        docker push $ECR_URL/oracle-jdk8-base:$JRE_VERSION
+      fi
 
 notifications:
   slack: unbxd:60rvQrHi5prNg8dMCJBVAoZU
-
