@@ -34,7 +34,8 @@ env:
         # ECR Url
         - ECR_URL="012629307706.dkr.ecr.us-east-1.amazonaws.com"
         # Base Image Name
-        - BASE_IMAGE_NAME="oracle-jdk8-base"\
+        - BASE_IMAGE_NAME="oracle-jdk8-base"
+        - SERVICE_NAME="$BASE_IMAGE_NAME"
         # Download URL 
         - JRE_DOWNLOAD_URL="$JRE_DOWNLOAD_VERSION-$JRE_DOWNLOAD_VERSION_SUFFIX/$JRE_DOWNLOAD_KEY/jre-$JRE_DOWNLOAD_VERSION-linux-x64.tar.gz"
 
@@ -67,13 +68,7 @@ install:
     - cd ./java && docker build -t oracle-jdk8-base:latest --build-arg JRE_NAME .
 
 after_success:
-    - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-        eval $(aws ecr get-login --region us-east-1 --no-include-email)
-        docker tag oracle-jdk8-base:latest $ECR_URL/oracle-jdk8-base:$LATEST_TAG
-        docker push $ECR_URL/oracle-jdk8-base:$LATEST_TAG
-        docker tag oracle-jdk8-base:latest $ECR_URL/oracle-jdk8-base:$JRE_VERSION
-        docker push $ECR_URL/oracle-jdk8-base:$JRE_VERSION
-      fi
+    - cd $TRAVIS_BUILD_DIR && ./ci.sh
 
 notifications:
   slack: unbxd:60rvQrHi5prNg8dMCJBVAoZU
