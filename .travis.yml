@@ -3,10 +3,10 @@ sudo: true
 env:
     global:
         # --------------------------------------------------------------------------------------- #
-        #                       MODIFY FOR JRE VERSION UPGRADE                                    #
+        #                       MODIFY FOR JDK VERSION UPGRADE                                    #
         # --------------------------------------------------------------------------------------- #
         #        
-        # JRE Variables used to form the download link
+        # JDK Variables used to form the download link
         # Typically the URL looks like 
         #
         #       https://download.oracle.com/otn-pub/java/jdk/8u202-b08/1961070e4c9b4e26a04e7f5a083f551e/jre-8u202-linux-x64.tar.gz
@@ -14,44 +14,44 @@ env:
         # Download Version is denoted `8u202` 
         # Download Version Suffix is `b08`
         # Download Key is `1961070e4c9b4e26a04e7f5a083f551e`
-        - JRE_DOWNLOAD_VERSION="8u202"
-        - JRE_DOWNLOAD_VERSION_SUFFIX="b08"
-        - JRE_DOWNLOAD_KEY="1961070e4c9b4e26a04e7f5a083f551e"
+        - JDK_DOWNLOAD_VERSION="8u201"
+        - JDK_DOWNLOAD_VERSION_SUFFIX="b09"
+        - JDK_DOWNLOAD_KEY="42970487e3af4f5aa5bca3f542482c60"
 
-        # JRE Version
+        # JDK Version
         # This is available as part of the untar. Untaring the tar results in `jre1.8.0_202`. 
         # Removing the prefix `jre` will give this version
-        - JRE_VERSION="1.8.0_202"
+        - JDK_VERSION="1.8.0_201"
 
         # --------------------------------------------------------------------------------------- #
         #                       DO NOT MODIFY FURTHER FOR VERSION UPGRADE                         #
         # --------------------------------------------------------------------------------------- #
 
         # Curl header for download
-        - JRE_DOWNLOAD_HEADER="Cookie:oraclelicense=accept-securebackup-cookie"
-        # Name of JRE folder after it is extracted
-        - JRE_NAME="jre$JRE_VERSION"
+        - JDK_DOWNLOAD_HEADER="Cookie:oraclelicense=accept-securebackup-cookie"
+        # Name of JDK folder after it is extracted
+        - JDK_NAME="jdk$JDK_VERSION"
         # ECR Url
         - ECR_URL="012629307706.dkr.ecr.us-east-1.amazonaws.com"
         # Base Image Name
         - BASE_IMAGE_NAME="oracle-jdk8-base"
         - SERVICE_NAME="$BASE_IMAGE_NAME"
         # Download URL 
-        - JRE_DOWNLOAD_URL="$JRE_DOWNLOAD_VERSION-$JRE_DOWNLOAD_VERSION_SUFFIX/$JRE_DOWNLOAD_KEY/jre-$JRE_DOWNLOAD_VERSION-linux-x64.tar.gz"
+        - JDK_DOWNLOAD_URL="$JDK_DOWNLOAD_VERSION-$JDK_DOWNLOAD_VERSION_SUFFIX/$JDK_DOWNLOAD_KEY/jdk-$JDK_DOWNLOAD_VERSION-linux-x64.tar.gz"
 
 services:
     - docker
 
 before_install:
       # Print Env Variables
-    - printf "JRE_DOWNLOAD_VERSION [ $JRE_DOWNLOAD_VERSION ] \n" &&
-        printf "JRE_DOWNLOAD_VERSION_SUFFIX [ $JRE_DOWNLOAD_VERSION_SUFFIX ] \n" &&
-        printf "JRE_DOWNLOAD_KEY [ $JRE_DOWNLOAD_KEY ] \n" &&
-        printf "JRE_VERSION [ $JRE_VERSION ] \n" &&
-        printf "JRE_DOWNLOAD_HEADER [ $JRE_DOWNLOAD_HEADER ] \n" &&
-        printf "JRE_NAME [ $JRE_NAME ] \n" &&
+    - printf "JDK_DOWNLOAD_VERSION [ $JDK_DOWNLOAD_VERSION ] \n" &&
+        printf "JDK_DOWNLOAD_VERSION_SUFFIX [ $JDK_DOWNLOAD_VERSION_SUFFIX ] \n" &&
+        printf "JDK_DOWNLOAD_KEY [ $JDK_DOWNLOAD_KEY ] \n" &&
+        printf "JDK_VERSION [ $JDK_VERSION ] \n" &&
+        printf "JDK_DOWNLOAD_HEADER [ $JDK_DOWNLOAD_HEADER ] \n" &&
+        printf "JDK_NAME [ $JDK_NAME ] \n" &&
         printf "BASE_IMAGE_NAME [ $BASE_IMAGE_NAME ] \n" &&
-        printf "JRE_DOWNLOAD_URL [ $JRE_DOWNLOAD_URL ] \n"
+        printf "JDK_DOWNLOAD_URL [ $JDK_DOWNLOAD_URL ] \n"
 
       # Housekeeping
     - sudo apt-get install  --no-install-recommends -y tree curl python &&
@@ -60,12 +60,12 @@ before_install:
         sudo pip install awscli
       
       # Download Oracle - tar from the URL
-    - curl -vjkL -H "$JRE_DOWNLOAD_HEADER" "https://download.oracle.com/otn-pub/java/jdk/$JRE_DOWNLOAD_URL" > ./java/jre.tar.gz 
+    - curl -vjkL -H "$JDK_DOWNLOAD_HEADER" "https://download.oracle.com/otn-pub/java/jdk/$JDK_DOWNLOAD_URL" > ./java/jdk.tar.gz 
     - ls -ltrh ./java
 
 
 install:
-    - cd ./java && docker build -t oracle-jdk8-base:latest --build-arg JRE_NAME .
+    - cd ./java && docker build -t oracle-jdk8-base:latest --build-arg JDK_NAME .
 
 after_success:
     - cd $TRAVIS_BUILD_DIR && ./ci.sh

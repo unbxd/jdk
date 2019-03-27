@@ -1,6 +1,6 @@
 FROM debian:stretch
 
-ARG JRE_NAME
+ARG JDK_NAME
 
 ADD . /java
 WORKDIR /java
@@ -12,13 +12,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y locales 
     update-locale LANG=en_US.UTF-8
 
 RUN mkdir -p /usr/lib/jvm && \
-    tar -xf jre.tar.gz -C /usr/lib/jvm && \
-    rm -rf jre.tar.gz && \
+    tar -xf jdk.tar.gz -C /usr/lib/jvm && \
+    rm -rf jdk.tar.gz && \
     ./jinfo.sh && ./alternative.sh && \
-    update-java-alternatives -s "${JRE_NAME}"
+    update-java-alternatives -s "${JDK_NAME}"
 
 ENV LANG en_US.UTF-8
-ENV JAVA_HOME="/usr/lib/jvm/${JRE_NAME}"
+ENV JAVA_HOME="/usr/lib/jvm/${JDK_NAME}"
 
 # Run and check Version
 RUN java -version
