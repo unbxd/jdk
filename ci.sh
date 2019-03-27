@@ -67,8 +67,8 @@ if [ ! -z "$TRAVIS" ]; then
         login_ecr $reg
         if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
             push_to_aws $reg $latest
-            if [ -n "$JRE_VERSION" ]; then
-                push_to_aws $reg $JRE_VERSION
+            if [ -n "$JDK_VERSION" ]; then
+                push_to_aws $reg $JDK_VERSION
             fi
         else
             pr_tag="PR_$(echo "${TRAVIS_PULL_REQUEST_SLUG//\//_}")_$TRAVIS_PULL_REQUEST_BRANCH";
