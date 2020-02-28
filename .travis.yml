@@ -7,37 +7,35 @@ env:
         # --------------------------------------------------------------------------------------- #
         #        
         # JDK Variables used to form the download link
-        # Typically the URL looks like 
+        # Typically the URL looks like
         #
-        #       https://download.oracle.com/otn-pub/java/jdk/8u202-b08/1961070e4c9b4e26a04e7f5a083f551e/jre-8u202-linux-x64.tar.gz
+        #       https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.6%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz
         #
-        # Download Version is denoted `8u202` 
-        # Download Version Suffix is `b08`
-        # Download Key is `1961070e4c9b4e26a04e7f5a083f551e`
-        - JDK_DOWNLOAD_VERSION="8u201"
-        - JDK_DOWNLOAD_VERSION_SUFFIX="b09"
-        - JDK_DOWNLOAD_KEY="42970487e3af4f5aa5bca3f542482c60"
+        # Download Version is denoted `11.0.6+10`
+        # Download Version PREFIX is `OpenJDK11U`
+        # Download REPO is `openjdk11-binaries`
+        - JDK_DOWNLOAD_VERSION="11.0.6+10"
+        - JDK_DOWNLOAD_VERSION_PREFIX="OpenJDK11U"
+        - JDK_DOWNLOAD_REPO="openjdk11-binaries"
 
         # JDK Version
-        # This is available as part of the untar. Untaring the tar results in `jre1.8.0_202`. 
+        # This is available as part of the untar. Untaring the tar results in `jre11.0.6_10`.
         # Removing the prefix `jre` will give this version
-        - JDK_VERSION="1.8.0_201"
+        - JDK_VERSION="11.0.6_10"
 
         # --------------------------------------------------------------------------------------- #
         #                       DO NOT MODIFY FURTHER FOR VERSION UPGRADE                         #
         # --------------------------------------------------------------------------------------- #
 
-        # Curl header for download
-        - JDK_DOWNLOAD_HEADER="Cookie:oraclelicense=accept-securebackup-cookie"
         # Name of JDK folder after it is extracted
-        - JDK_NAME="jdk$JDK_VERSION"
+        - JDK_NAME="jdk-$JDK_DOWNLOAD_VERSION"
         # ECR Url
         - ECR_URL="012629307706.dkr.ecr.us-east-1.amazonaws.com"
         # Base Image Name
-        - BASE_IMAGE_NAME="oracle-jdk8-base"
+        - BASE_IMAGE_NAME="adoptopenjdk-jdk11-base"
         - SERVICE_NAME="$BASE_IMAGE_NAME"
         # Download URL 
-        - JDK_DOWNLOAD_URL="$JDK_DOWNLOAD_VERSION-$JDK_DOWNLOAD_VERSION_SUFFIX/$JDK_DOWNLOAD_KEY/jdk-$JDK_DOWNLOAD_VERSION-linux-x64.tar.gz"
+        - JDK_DOWNLOAD_URL="$JDK_DOWNLOAD_REPO/releases/download/jdk-$JDK_DOWNLOAD_VERSION/$JDK_DOWNLOAD_VERSION_PREFIX-jdk_x64_linux_hotspot_$JDK_VERSION.tar.gz"
 
 services:
     - docker
@@ -45,10 +43,9 @@ services:
 before_install:
       # Print Env Variables
     - printf "JDK_DOWNLOAD_VERSION [ $JDK_DOWNLOAD_VERSION ] \n" &&
-        printf "JDK_DOWNLOAD_VERSION_SUFFIX [ $JDK_DOWNLOAD_VERSION_SUFFIX ] \n" &&
-        printf "JDK_DOWNLOAD_KEY [ $JDK_DOWNLOAD_KEY ] \n" &&
+        printf "JDK_DOWNLOAD_VERSION_PREFIX [ $JDK_DOWNLOAD_VERSION_PREFIX ] \n" &&
+        printf "JDK_DOWNLOAD_REPO [ $JDK_DOWNLOAD_REPO ] \n" &&
         printf "JDK_VERSION [ $JDK_VERSION ] \n" &&
-        printf "JDK_DOWNLOAD_HEADER [ $JDK_DOWNLOAD_HEADER ] \n" &&
         printf "JDK_NAME [ $JDK_NAME ] \n" &&
         printf "BASE_IMAGE_NAME [ $BASE_IMAGE_NAME ] \n" &&
         printf "JDK_DOWNLOAD_URL [ $JDK_DOWNLOAD_URL ] \n"
@@ -60,12 +57,12 @@ before_install:
         sudo pip install awscli
       
       # Download Oracle - tar from the URL
-    - curl -vjkL -H "$JDK_DOWNLOAD_HEADER" "https://download.oracle.com/otn-pub/java/jdk/$JDK_DOWNLOAD_URL" > ./java/jdk.tar.gz 
+    - curl -vjkL "https://github.com/AdoptOpenJDK/$JDK_DOWNLOAD_URL" > ./java/jdk.tar.gz
     - ls -ltrh ./java
 
 
 install:
-    - cd ./java && docker build -t oracle-jdk8-base:latest --build-arg JDK_NAME .
+    - cd ./java && docker build -t adoptopenjdk-jdk11-base --build-arg JDK_NAME .
 
 after_success:
     - cd $TRAVIS_BUILD_DIR && ./ci.sh
