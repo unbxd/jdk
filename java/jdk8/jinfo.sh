@@ -8,7 +8,7 @@ echo "Jinfo Path: /usr/lib/jvm/.${JDK_NAME}.jinfo"
 FILE="/usr/lib/jvm/.${JDK_NAME}.jinfo"
 
 echo "name=${JDK_NAME}" >> "${FILE}"
-echo "alias=oracle-jdk1.8" >> "${FILE}"
+echo "alias=adoptOpenJdk-jdk8" >> "${FILE}"
 echo "priority=180" >> "${FILE}"
 echo "section=main" >> "${FILE}"
 echo "" >> "${FILE}"
@@ -59,6 +59,5 @@ echo "jdk jdeps /usr/lib/jvm/${JDK_NAME}/bin/jdeps" >> "${FILE}"
 echo "jdk jjs /usr/lib/jvm/${JDK_NAME}/bin/jjs" >> "${FILE}"
 echo "jdk jmc /usr/lib/jvm/${JDK_NAME}/bin/jmc" >> "${FILE}"
 echo "jdk jvisualvm /usr/lib/jvm/${JDK_NAME}/bin/jvisualvm" >> "${FILE}"
-
 
 cat $FILE
