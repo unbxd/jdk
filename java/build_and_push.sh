@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# this script builds the docker image for given set of JDK versions
+# build images are pushed to AWS ECR
+
 set -e
 declare -A envs
 envs=( \
     ["jdk11"]="adoptopenjdk-jdk11-base" \
+    ["jdk8"]="adoptopenjdk-jdk8-base" \
 )
 
 declare -A regions
@@ -19,6 +23,7 @@ type aws > /dev/null 2>&1 || {
 
 ECR_URL="012629307706.dkr.ecr.REGION.amazonaws.com"
 echo "DEFAULT ECR_URL: $ECR_URL"
+
 # Logs into ECR for a given region
 login_ecr () {
     if [ -z "$1" ]; then
@@ -66,6 +71,8 @@ push_to_aws () {
     echo "DONE!!"
 }
 
+# initiate_push SERVICE_NAME JDK_VERSION
+# helper method for accomplish pushing image to all specified regions
 initiate_push () {
     if [ -z "$1" ]; then
         echo >&2 "Incorrect Function Call. No SERVICE NAME specified"; exit 1;
@@ -94,19 +101,19 @@ initiate_push () {
     fi
 }
 
-# push_to_aws region tag
-# Pushes the docker image to ECR repo
+# build_image DOWNLOAD_URK JDK_DIR JDK_NAME
+# Downloads the binary and builds the docker image
 build_image () {
     if [ -z "$1" ]; then
-        echo >&2 "Incorrect Function Call. No URI PATH Passed"; exit 1;
+        echo >&2 "Incorrect Function Call. No URL Passed"; exit 1;
     fi
     if [ -z "$2" ]; then
         echo >&2 "Incorrect Function Call. No Directory Passed"; exit 1;
     fi
     if [ -z "$3" ]; then
-        echo >&2 "Incorrect Function Call. No JDK_VERSION Passed"; exit 1;
+        echo >&2 "Incorrect Function Call. No JDK_NAME Passed"; exit 1;
     fi
-    url="https://github.com/AdoptOpenJDK/${1}"
+    url=$1
     dir=$2
     export JDK_NAME=$3
 
@@ -115,28 +122,39 @@ build_image () {
     echo "URL: $url"
     echo "JDK_VERSION: $env"
     echo "--------------------"
+    # store the current directory
+    CURRENT_DIR=$(pwd)
     cd ./${env};
     curl -jkL "${url}" > jdk.tar.gz
     ls -ltrh .
     echo "BUILDING DOCKER IMAGE"
     echo "--------------------"
     docker build -t "${envs[$env]}" --build-arg JDK_NAME .
+    # revert to the original directory
+    cd $CURRENT_DIR
     echo "DONE!!"
 }
 
 for env in "${!envs[@]}"; do
 
+    # To upgrade the image for existing JDK version, provide JDK_TAG, JDK_VERSION and DOWNLOAD_URL
+    # JDK_VERSION would be generally same as the name of untarred folder
+    # To new version add an entry to env and add if condition here
     echo "Initiating build for ${env}"
     echo "------------------"
     if [ "$env" = "jdk11" ]; then
         JDK_TAG="11.0.6_10"
-        build_image "openjdk11-binaries/releases/download/jdk-11.0.6+10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz" $env "jdk-11.0.6+10"
+        JDK_VERSION="jdk-11.0.6+10"
+        DOWNLOAD_URL="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/${JDK_VERSION}/OpenJDK11U-jdk_x64_linux_hotspot_11.0.6_10.tar.gz"
     elif [ "$env" = "jdk8" ]; then
         JDK_TAG="1.8.0_242"
-        build_image "openjdk8-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz" $env "jdk1.8.0_242"
+        JDK_VERSION="jdk8u242-b08"
+        DOWNLOAD_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/${JDK_VERSION}/OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz"
     else
        echo "Invalid ${env} specified"; exit 1;
     fi
+
+    build_image ${DOWNLOAD_URL} $env ${JDK_VERSION}
     echo "Initiating AWS push for ${env}"
     initiate_push "${envs[$env]}" "${JDK_TAG}"
 done

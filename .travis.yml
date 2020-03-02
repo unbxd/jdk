@@ -17,7 +17,7 @@ before_install:
         sudo pip install awscli
 
 install:
-    - cd ./java && ./build.sh
+    - cd ./java && ./build_and_push.sh
 
 notifications:
   slack: unbxd:60rvQrHi5prNg8dMCJBVAoZU
