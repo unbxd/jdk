@@ -3,6 +3,7 @@
 # this script builds the docker image for given set of JDK versions
 # build images are pushed to AWS ECR
 
+# register new JDK whenever added
 set -e
 declare -A envs
 envs=( \
@@ -122,11 +123,16 @@ build_image () {
     echo "URL: $url"
     echo "JDK_VERSION: $env"
     echo "--------------------"
+
     # store the current directory
     CURRENT_DIR=$(pwd)
+    if [ ! -d ${env} ]; then
+        echo "Given ${env} directory doesn't exist in ${CURRENT_DIR}"; exit 9;
+    fi
     cd ./${env};
     curl -jkL "${url}" > jdk.tar.gz
     ls -ltrh .
+
     echo "BUILDING DOCKER IMAGE"
     echo "--------------------"
     docker build -t "${envs[$env]}" --build-arg JDK_NAME .
@@ -139,7 +145,7 @@ for env in "${!envs[@]}"; do
 
     # To upgrade the image for existing JDK version, provide JDK_TAG, JDK_VERSION and DOWNLOAD_URL
     # JDK_VERSION would be generally same as the name of untarred folder
-    # To new version add an entry to env and add if condition here
+    # To new JDK version add an entry to env and add if condition here
     echo "Initiating build for ${env}"
     echo "------------------"
     if [ "$env" = "jdk11" ]; then
