@@ -3,6 +3,14 @@
 # this script builds the docker image for given set of JDK versions
 # build images are pushed to AWS ECR
 
+push_to_aws="true"
+
+if [ ! -z "$1" ]; then
+    if [ "$1" == "false" ]; then
+        push_to_aws="false"
+    fi
+fi
+
 # register new JDK whenever added
 set -e
 declare -A envs
@@ -84,21 +92,21 @@ initiate_push () {
     if [ ! -z "$TRAVIS" ]; then
         # Login to ECR
         for reg in "${!regions[@]}"; do
-           echo "FOR REGION: $reg"
-           echo "---------------------------------------------------------"
-           login_ecr $reg
-           if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-               push_to_aws $reg $latest $1
-               if [ ! -z "$2" ]; then
+            echo "FOR REGION: $reg"
+            echo "---------------------------------------------------------"
+            login_ecr $reg
+            if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+                push_to_aws $reg $latest $1
+                if [ ! -z "$2" ]; then
                    push_to_aws $reg $2 $1
-               fi
-           else
-               pr_tag="PR_$(echo "${TRAVIS_PULL_REQUEST_SLUG//\//_}")_$TRAVIS_PULL_REQUEST_BRANCH";
-               push_to_aws $reg $pr_tag $1
-           fi
-       done
+                fi
+            else
+                pr_tag="PR_$(echo "${TRAVIS_PULL_REQUEST_SLUG//\//_}")_$TRAVIS_PULL_REQUEST_BRANCH";
+                push_to_aws $reg $pr_tag $1
+            fi
+        done
     else
-       echo "Non-Travis build, Exiting"; exit 0;
+        echo "Non-Travis build, Exiting"; exit 0;
     fi
 }
 
@@ -157,10 +165,12 @@ for env in "${!envs[@]}"; do
         JDK_VERSION="jdk8u242-b08"
         DOWNLOAD_URL="https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/${JDK_VERSION}/OpenJDK8U-jdk_x64_linux_hotspot_8u242b08.tar.gz"
     else
-       echo "Invalid ${env} specified"; exit 1;
+        echo "Invalid ${env} specified"; exit 1;
     fi
 
     build_image ${DOWNLOAD_URL} $env ${JDK_VERSION}
-    echo "Initiating AWS push for ${env}"
-    initiate_push "${envs[$env]}" "${JDK_TAG}"
+    if [ "$push_to_aws" == "true" ]; then
+        echo "Initiating AWS push for ${env}"
+        initiate_push "${envs[$env]}" "${JDK_TAG}"
+    fi
 done
