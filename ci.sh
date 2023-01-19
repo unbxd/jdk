@@ -23,8 +23,8 @@ for i in $(ls -d */); do
         echo "---"
         docker build -t "$repo:$tag" .
         echo "pushing image to ghcr.io"
-        docker tag "$repo:$tag" "ghcr.io/unbxd/jdk-docker:$tag"
-        docker push "ghcr.io/unbxd/jdk-docker:$tag"
+        docker tag "$repo:$tag" "ghcr.io/unbxd/jdk:$tag"
+        docker push "ghcr.io/unbxd/jdk:$tag"
         echo "---"
     fi
     cd - > /dev/null
